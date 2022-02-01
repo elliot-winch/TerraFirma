@@ -46,15 +46,9 @@ public class MeshGenerator : MonoBehaviour {
     Queue<Chunk> recycleableChunks;
 
     // Buffers
-    //ComputeBuffer triangleBuffer;
-    //Input
+    ComputeBuffer triangleBuffer;
     ComputeBuffer pointsBuffer;
-
-    //Output
-    ComputeBuffer verticesBuffer;
-    ComputeBuffer trianglesBuffer;
-
-    ComputeBuffer triangleCountBuffer;
+    ComputeBuffer triCountBuffer;
 
     bool settingsUpdated;
 
@@ -89,22 +83,26 @@ public class MeshGenerator : MonoBehaviour {
 
     public void Run() 
     {
-        ReleaseBuffers();
         CreateBuffers();
 
-        Debug.Log("Num Edges " + NumEdges);
-
-        if (fixedMapSize) 
+        if (fixedMapSize)
         {
             InitChunks();
             UpdateAllChunks();
+
         }
-        else 
+        else
         {
-            if (Application.isPlaying) 
+            if (Application.isPlaying)
             {
                 InitVisibleChunks();
             }
+        }
+
+        // Release buffers immediately in editor
+        if (!Application.isPlaying)
+        {
+            ReleaseBuffers();
         }
     }
 
@@ -205,58 +203,42 @@ public class MeshGenerator : MonoBehaviour {
 
         densityGenerator.Generate(pointsBuffer, numPointsPerAxis, boundsSize, worldBounds, centre, offset, pointSpacing);
 
-        trianglesBuffer.SetCounterValue(0);
-        verticesBuffer.SetData(Enumerable.Repeat(Vector4.zero, NumEdges).ToArray());
-        triangleCountBuffer.SetData(new int[1] { 0 });
-
+        triangleBuffer.SetCounterValue(0);
         shader.SetBuffer(0, "points", pointsBuffer);
-        shader.SetBuffer(0, "vertices", verticesBuffer);
-        shader.SetBuffer(0, "triangles", trianglesBuffer);
+        shader.SetBuffer(0, "triangles", triangleBuffer);
         shader.SetInt("numPointsPerAxis", numPointsPerAxis);
         shader.SetFloat("isoLevel", isoLevel);
 
         shader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
-        // Get triangles
-        int[] countArray = { 0 };
-        ComputeBuffer.CopyCount(trianglesBuffer, triangleCountBuffer, 0);
-        triangleCountBuffer.GetData(countArray);
-        int num = countArray[0];
+        // Get number of triangles in the triangle buffer
+        ComputeBuffer.CopyCount(triangleBuffer, triCountBuffer, 0);
+        int[] triCountArray = { 0 };
+        triCountBuffer.GetData(triCountArray);
+        int numTris = triCountArray[0];
 
-        Triangle[] triangleData = new Triangle[num];
-        trianglesBuffer.GetData(triangleData, 0, 0, num);
-        int[] triangles = triangleData.Select(t => new int[]{ t.a, t.c, t.b }).SelectMany(i => i).ToArray();
+        // Get triangle data from shader
+        Triangle[] tris = new Triangle[numTris];
+        triangleBuffer.GetData(tris, 0, 0, numTris);
 
-        Vector4[] vertexData = new Vector4[NumEdges];
-        verticesBuffer.GetData(vertexData);
-        Vector3[] vertices = vertexData.Select(v => new Vector3(v.x, v.y, v.z)).ToArray();
+        Mesh mesh = chunk.mesh;
+        mesh.Clear();
 
-        StringBuilder sb = new();
-        foreach (Vector4 vi in vertices)
+        var vertices = new Vector3[numTris * 3];
+        var meshTriangles = new int[numTris * 3];
+
+        for (int i = 0; i < numTris; i++)
         {
-            sb.Append(string.Format("{0}, ", vi));
+            for (int j = 0; j < 3; j++)
+            {
+                meshTriangles[i * 3 + j] = i * 3 + j;
+                vertices[i * 3 + j] = tris[i][j];
+            }
         }
+        mesh.vertices = vertices;
+        mesh.triangles = meshTriangles;
 
-        Debug.Log("Total Verts: " + vertices.Length + ". Verts: " + sb.ToString());
-
-        sb.Clear();
-        foreach (int vi in triangles)
-        {
-            sb.Append(string.Format("{0}, ", vi));
-        }
-
-        Debug.Log("Total Trongs: " + triangles.Length + ". Trongs: " + sb.ToString());
-
-
-        if (vertices.Length > 0)
-        {
-            //Assign to mesh
-            Mesh mesh = chunk.mesh;
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-
-            mesh.RecalculateNormals();
-        }
+        mesh.RecalculateNormals();
     }
 
     public void UpdateAllChunks () {
@@ -285,36 +267,26 @@ public class MeshGenerator : MonoBehaviour {
 
         // Always create buffers in editor (since buffers are released immediately to prevent memory leak)
         // Otherwise, only create if null or if size has changed
-        if (!Application.isPlaying || (pointsBuffer == null || numPoints != pointsBuffer.count)) {
-
+        if (!Application.isPlaying || (pointsBuffer == null || numPoints != pointsBuffer.count))
+        {
+            if (Application.isPlaying)
+            {
+                ReleaseBuffers();
+            }
+            triangleBuffer = new ComputeBuffer(maxTriangleCount, sizeof(float) * 3 * 3, ComputeBufferType.Append);
             pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
-            verticesBuffer = new ComputeBuffer (NumEdges, sizeof (float) * 4);
-            trianglesBuffer = new ComputeBuffer (maxTriangleCount, sizeof (int), ComputeBufferType.Append);
-            
-            triangleCountBuffer = new ComputeBuffer (1, sizeof (int), ComputeBufferType.Raw);
+            triCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
+
         }
     }
 
     void ReleaseBuffers () 
     {
-        if (trianglesBuffer != null)
+        if (triangleBuffer != null)
         {
-            trianglesBuffer.Release();
-        }
-
-        if (pointsBuffer != null)
-        {
+            triangleBuffer.Release();
             pointsBuffer.Release();
-        }
-
-        if (verticesBuffer != null)
-        {
-            verticesBuffer.Release();
-        }
-
-        if (triangleCountBuffer != null)
-        {
-            triangleCountBuffer.Release();
+            triCountBuffer.Release();
         }
     }
 
@@ -391,13 +363,19 @@ public class MeshGenerator : MonoBehaviour {
         settingsUpdated = true;
     }
 
-    struct Triangle {
+    struct Triangle
+    {
 #pragma warning disable 649 // disable unassigned variable warning
-        public int a, b, c;
+        public Vector3 a;
+        public Vector3 b;
+        public Vector3 c;
 
-        public int this [int i] {
-            get {
-                switch (i) {
+        public Vector3 this[int i]
+        {
+            get
+            {
+                switch (i)
+                {
                     case 0:
                         return a;
                     case 1:
@@ -410,7 +388,7 @@ public class MeshGenerator : MonoBehaviour {
 
         public override string ToString()
         {
-            return string.Format("({0}, {1}, {2})", a, b, c);
+            return string.Format("{0}, {1}, {2}", a, b, c);
         }
     }
 
