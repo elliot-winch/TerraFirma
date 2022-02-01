@@ -7,15 +7,12 @@ struct Triangle {
     float3 vertexC;
     float3 vertexB;
     float3 vertexA;
-    float3 normalC;
-    float3 normal;
-    float3 normalA;
 };
 
 AppendStructuredBuffer<Triangle> triangles;
 RWStructuredBuffer<float4> points;
 
-int numPointsPerAxis;
+int3 numPoints;
 float isoLevel;
 
 float3 interpolateVerts(float4 v1, float4 v2) {
@@ -24,13 +21,14 @@ float3 interpolateVerts(float4 v1, float4 v2) {
 }
 
 int indexFromCoord(int x, int y, int z) {
-    return z * numPointsPerAxis * numPointsPerAxis + y * numPointsPerAxis + x;
+    return z * numPoints.y * numPoints.x + y * numPoints.x + x;
 }
+
 [numthreads(numThreads,numThreads,numThreads)]
 void March (int3 id : SV_DispatchThreadID)
 {   
     // Stop one point before the end because voxel includes neighbouring points
-    if (id.x >= numPointsPerAxis-1 || id.y >= numPointsPerAxis-1 || id.z >= numPointsPerAxis-1) {
+    if (id.x >= numPoints.x-1 || id.y >= numPoints.y-1 || id.z >= numPoints.z-1) {
         return;
     }
 
@@ -77,9 +75,6 @@ void March (int3 id : SV_DispatchThreadID)
         tri.vertexA = interpolateVerts(cornerValues[a0], cornerValues[b0]);
         tri.vertexB = interpolateVerts(cornerValues[a1], cornerValues[b1]);
         tri.vertexC = interpolateVerts(cornerValues[a2], cornerValues[b2]);
-
-
-
         triangles.Append(tri);
     }
 }
