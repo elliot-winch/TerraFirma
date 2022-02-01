@@ -1,0 +1,68 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel IslandBase
+#include "./Includes/Density.compute"
+#include "./Includes/Noise.compute"
+
+float curvature;
+float coneRadius;
+float coneHeight;
+
+float noiseInfluenceCurve; //reduce noise at the base to maintain cone shape
+
+int octaves;
+float startingFrequency;
+float frequencyStep;
+float startingAmplitude;
+float amplitudeStep;
+float3 noiseOffset;
+float3 noiseScalar;
+
+float relativeYLevel(float y)
+{
+    return max(0, (y + boundsSize/2) / (coneHeight));
+}
+
+float cone(float3 pos)
+{
+    float3 circleDistance = float3(pos.x, 0, pos.z);
+    float cylinderValue = length(circleDistance) / coneRadius;
+
+    float curvatureValue = 1 - pow(relativeYLevel(pos.y), curvature);
+
+    return cylinderValue - curvatureValue;
+}
+
+//TO MOVE
+float addNoise(float3 pos)
+{
+    float noise = 0;
+    float frequency = startingFrequency;
+    float amplitude = startingAmplitude;
+
+    for (int j = 0; j < octaves; j++) 
+    {
+        float3 noisePos = (pos + noiseOffset) * noiseScalar;
+        noise += snoise(noisePos * frequency) * amplitude;
+        amplitude *= amplitudeStep;
+        frequency *= frequencyStep;
+    }
+
+    return noise;
+}
+
+[numthreads(numThreads,numThreads,numThreads)]
+void IslandBase (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= numPointsPerAxis || id.y >= numPointsPerAxis || id.z >= numPointsPerAxis) 
+    {
+        return;
+    }    
+
+    float3 pos = posFromCoord(id.x,id.y,id.z);
+    float value = cone(pos);
+
+    value += addNoise(pos) * pow(relativeYLevel(pos.y), noiseInfluenceCurve);
+
+    int index = indexFromCoord(id.x,id.y,id.z);
+    points[index] = float4(pos, -value);
+}
