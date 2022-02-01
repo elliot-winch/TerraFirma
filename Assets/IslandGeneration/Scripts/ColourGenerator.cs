@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class ColourGenerator : MonoBehaviour {
     public Material mat;
     public Gradient gradient;
@@ -18,17 +17,19 @@ public class ColourGenerator : MonoBehaviour {
     }
 
     void Update () {
+        /*
         Init ();
         UpdateTexture ();
 
         MeshGenerator m = FindObjectOfType<MeshGenerator> ();
 
-        float boundsY = m.boundsSize * m.numChunks.y;
+        float boundsY = m.ChunkSize * m.numChunks.y;
 
         mat.SetFloat ("boundsY", boundsY);
         mat.SetFloat ("normalOffsetWeight", normalOffsetWeight);
 
         mat.SetTexture ("ramp", texture);
+        */
     }
 
     void UpdateTexture () {

@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class VisualiseField : MonoBehaviour
 {
     [SerializeField]
@@ -10,46 +8,58 @@ public class VisualiseField : MonoBehaviour
     private DensityGenerator m_DensityGenerator;
     [SerializeField]
     private int m_Level;
-
-    // Buffers
-    ComputeBuffer pointsBuffer;
-
-    [Header("Visualise")]
-    public Color minInsideColor;
-    public Color maxInsideColor;
-    public Color minOutsideColor;
-    public Color maxOutsideColor;
-    public bool m_ThresholdColor;
-
-    private bool m_SettingsUpdated;
-    private Vector4[] m_Points;
-    private float m_Min;
-    private float m_Max;
-
+    [SerializeField]
+    private Color m_MinInsideColor;
+    [SerializeField]
+    private Color m_MaxInsideColor;
+    [SerializeField]
+    private Color m_MinOutsideColor;
+    [SerializeField]
+    private Color m_MaxOutsideColor;
     [SerializeField]
     private MeshRenderer m_TextureObject;
+
+    private ComputeBuffer m_PointsBuffer;
+
     private Texture2D m_Texture;
 
-    void OnValidate()
+    private void Awake()
     {
-        m_SettingsUpdated = true;
+        CreateBuffers();
+        CreateTexture();
+
+        m_MeshGenerator.SettingsUpdated.Subscribe(OnSettingsUpdated);
     }
 
-    private void Update()
+    private void OnValidate()
     {
-        if (m_SettingsUpdated)
+        if (Application.isPlaying)
+        {
+            m_MeshGenerator.SettingsUpdated.Value = true;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseBuffers();
+    }
+
+    private void OnSettingsUpdated(bool updated)
+    {
+        if (updated)
         {
             Run();
-            m_SettingsUpdated = false;
         }
     }
 
     public void Run()
     {
-        CreateBuffers();
-        CreateTexture();
+        if(m_MeshGenerator.Chunks == null)
+        {
+            return;
+        }
 
-        foreach (Chunk chunk in m_MeshGenerator.chunks)
+        foreach (Chunk chunk in m_MeshGenerator.Chunks)
         {
             Visualise(chunk);
         }
@@ -58,46 +68,40 @@ public class VisualiseField : MonoBehaviour
     public void Visualise(Chunk chunk)
     {
         m_DensityGenerator.Generate(
-            pointsBuffer, 
-            m_MeshGenerator.numPointsPerAxis, 
-            m_MeshGenerator.boundsSize, 
-            m_MeshGenerator.WorldBounds,
+            m_PointsBuffer, 
+            new Vector3Int(m_MeshGenerator.NumPointsPerAxis.x, 1, m_MeshGenerator.NumPointsPerAxis.z), 
+            m_MeshGenerator.ChunkSize, 
             m_MeshGenerator.CentreFromCoord(chunk.coord), 
-            m_MeshGenerator.offset, 
+            m_MeshGenerator.Offset, 
             m_MeshGenerator.PointSpacing
         );
         
-        m_Points = new Vector4[m_MeshGenerator.NumPoints];
+        Vector4[] points = new Vector4[m_MeshGenerator.NumPointsPerAxis.x * m_MeshGenerator.NumPointsPerAxis.z];
 
-        pointsBuffer.GetData(m_Points);
+        m_PointsBuffer.GetData(points);
 
-        m_Min = float.MaxValue;
-        m_Max = float.MinValue;
+        float min = float.MaxValue;
+        float max = float.MinValue;
 
-        foreach (Vector4 p in m_Points)
+        foreach (Vector4 p in points)
         {
-            if (p.w < m_Min)
+            if (p.w < min)
             {
-                m_Min = p.w;
+                min = p.w;
             }
 
-            if (p.w > m_Max)
+            if (p.w > max)
             {
-                m_Max = p.w;
+                max = p.w;
             }
         }
 
-        DrawTexture();
+        DrawTexture(points, min, max);
     }
 
-    private void DrawTexture()
+    private void DrawTexture(Vector4[] points, float min, float max)
     {
-        if(m_Points == null)
-        {
-            return;
-        }
-
-        if (m_Level < 0 || m_Level >= m_MeshGenerator.numPointsPerAxis)
+        if (m_Level < 0 || m_Level >= m_MeshGenerator.NumPointsPerAxis.y)
         {
             return;
         }
@@ -108,20 +112,19 @@ public class VisualiseField : MonoBehaviour
         {
             for (int j = 0; j < m_Texture.height; j++)
             {
-                int pixelIndex = j + i * m_MeshGenerator.numPointsPerAxis;
-                int fieldIndex = pixelIndex + m_Level * m_MeshGenerator.numPointsPerAxis * m_MeshGenerator.numPointsPerAxis;
+                int pixelIndex = j + i * m_MeshGenerator.NumPointsPerAxis.x;
 
-                float normalisedValue = Mathf.InverseLerp(m_Min, m_Max, m_Points[fieldIndex].w);
+                float normalisedValue = Mathf.InverseLerp(min, max, points[pixelIndex].w);
 
                 Color c;
 
-                if (m_Points[fieldIndex].w > m_MeshGenerator.isoLevel)
+                if (points[pixelIndex].w > m_MeshGenerator.FieldThreshold)
                 {
-                    c = Color.Lerp(minInsideColor, maxInsideColor, normalisedValue);
+                    c = Color.Lerp(m_MinInsideColor, m_MaxInsideColor, normalisedValue);
                 }
                 else
                 {
-                    c = Color.Lerp(minOutsideColor, maxOutsideColor, normalisedValue);
+                    c = Color.Lerp(m_MinOutsideColor, m_MaxOutsideColor, normalisedValue);
                 }
 
                 textureColors[pixelIndex] = c;
@@ -134,30 +137,28 @@ public class VisualiseField : MonoBehaviour
 
     private void CreateTexture()
     {
-        if (m_Texture == null || m_Texture.width != m_MeshGenerator.numPointsPerAxis || m_Texture.height != m_MeshGenerator.numPointsPerAxis)
+        if (m_Texture == null || m_Texture.width != m_MeshGenerator.NumPointsPerAxis.x || m_Texture.height != m_MeshGenerator.NumPointsPerAxis.z)
         {
-            m_Texture = new Texture2D(m_MeshGenerator.numPointsPerAxis, m_MeshGenerator.numPointsPerAxis)
+            m_Texture = new Texture2D(m_MeshGenerator.NumPointsPerAxis.x, m_MeshGenerator.NumPointsPerAxis.z)
             {
                 filterMode = FilterMode.Point
             };
-            m_TextureObject.sharedMaterial.SetTexture("_MainTex", m_Texture);
+            m_TextureObject.material.SetTexture("_MainTex", m_Texture);
         }
     }
 
     private void CreateBuffers()
     {
-        if (pointsBuffer == null || m_MeshGenerator.NumPoints != pointsBuffer.count)
-        {
-            ReleaseBuffers();
-            pointsBuffer = new ComputeBuffer(m_MeshGenerator.NumPoints, sizeof(float) * 4);
-        }
+        ReleaseBuffers();
+
+        m_PointsBuffer = new ComputeBuffer(m_MeshGenerator.NumPoints, sizeof(float) * 4);
     }
 
     private void ReleaseBuffers()
     {
-        if (pointsBuffer != null)
+        if (m_PointsBuffer != null)
         {
-            pointsBuffer.Release();
+            m_PointsBuffer.Release();
         }
     }
 }

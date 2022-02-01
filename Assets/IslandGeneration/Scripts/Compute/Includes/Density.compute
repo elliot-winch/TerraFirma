@@ -1,20 +1,20 @@
 ﻿static const int numThreads = 8;
 
 RWStructuredBuffer<float4> points;
-int numPointsPerAxis;
-float boundsSize;
+int3 numPoints;
+float3 boundsSize;
 float3 centre;
 float3 offset;
-float spacing;
-float3 worldSize;
+float3 spacing;
 
 int indexFromCoord(uint x, uint y, uint z) 
 {
-    return z * numPointsPerAxis * numPointsPerAxis + y * numPointsPerAxis + x;
+    return z * numPoints.y * numPoints.x + y * numPoints.x + x;
 }
 
 float3 posFromCoord(uint x, uint y, uint z)
 {
-    uint3 id = uint3(x,y,z);
-    return (centre + id * spacing - boundsSize/2) + offset;
+    float3 pos = float3(x * spacing.x, y * spacing.y, z * spacing.z);
+
+    return pos + centre + offset - boundsSize/2;
 }
