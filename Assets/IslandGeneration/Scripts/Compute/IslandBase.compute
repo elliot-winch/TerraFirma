@@ -1,7 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel IslandBase
 #include "./Includes/Density.compute"
-#include "./Includes/AddNoise.compute"
+#include "./Includes/AddNoise.compute" 
 
 float curvature;
 float coneRadius;
@@ -9,19 +9,23 @@ float coneHeight;
 
 float noiseInfluenceCurve; //reduce noise at the base to maintain cone shape
 
+//0 is base, 1 is vertical
+RWStructuredBuffer<NoiseParameters> noiseParameters;
+
 float relativeYLevel(float y)
 {
-    return max(0, (y + boundsSize.y/2) / (coneHeight));
+    return abs((y + boundsSize.y/2) / coneHeight);
 }
 
 float cone(float3 pos)
 {
-    float3 circleDistance = float3(pos.x, 0, pos.z);
-    float cylinderValue = length(circleDistance) / coneRadius;
+    float3 pos2D = float3(pos.x, 0, pos.z) + addNoise(pos, noiseParameters[0]);
 
     float curvatureValue = 1 - pow(relativeYLevel(pos.y), curvature);
+    float radius = coneRadius * curvatureValue; //radius at given relative y position
 
-    return cylinderValue - curvatureValue;
+    //Scale noise by distance from the center (where radius of limit varies by y position)
+    return radius - length(pos2D);
 }
 
 [numthreads(numThreads,numThreads,numThreads)]
@@ -35,8 +39,8 @@ void IslandBase (uint3 id : SV_DispatchThreadID)
     float3 pos = posFromCoord(id.x,id.y,id.z);
     float value = cone(pos);
 
-    value += addNoise(pos) * pow(relativeYLevel(pos.y), noiseInfluenceCurve);
+    value += addNoise(pos, noiseParameters[1]) * pow(relativeYLevel(pos.y), noiseInfluenceCurve);
 
     int index = indexFromCoord(id.x,id.y,id.z);
-    points[index] = float4(pos, -value);
+    points[index] = float4(pos, value); //
 }

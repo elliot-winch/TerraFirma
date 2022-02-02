@@ -53,6 +53,7 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField]
     private Vector3 m_ChunkSize = Vector3.one;
     public Vector3 ChunkSize => m_ChunkSize;
+    [Tooltip("Don't change at runtime, as the buffers do not change size")]
     [SerializeField]
     private Vector3Int m_NumPoints = Vector3Int.one * 2;
     public Vector3Int NumPointsPerAxis => m_NumPoints;
@@ -117,8 +118,10 @@ public class MeshGenerator : MonoBehaviour
     {
         CreateBuffers();
         InitChunks();
-        UpdateChunks();
+    }
 
+    private void Start()
+    {
         SettingsUpdated.Subscribe(OnSettingsUpdated);
     }
 
@@ -327,6 +330,7 @@ public class MeshGenerator : MonoBehaviour
                     GameObject chunk = new($"Chunk ({x}, {y}, {z})");
 
                     chunk.transform.parent = m_ChunkHolder.transform;
+                    chunk.transform.localRotation = Quaternion.identity;
                     chunk.transform.localPosition = Vector3.zero;
 
                     Chunk newChunk = chunk.AddComponent<Chunk>();

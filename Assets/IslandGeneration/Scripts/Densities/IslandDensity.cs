@@ -5,13 +5,65 @@ public class IslandDensity : DensityGenerator
     [SerializeField]
     private IslandGenerationData m_Data;
 
-    public IslandGenerationData Data { get; set; }
+    public IslandGenerationData Data
+    {
+        get
+        {
+            return m_Data;
+        }
+        set
+        {
+            if(m_Data != null)
+            {
+                m_Data.OnParametersChanged -= Validated;
+            }
+
+            m_Data = value;
+
+            if(m_Data != null)
+            {
+                m_Data.OnParametersChanged += Validated;
+            }
+        }
+    }
+
+    private ComputeBuffer m_NoiseParameterBuffer;
 
     private void Awake()
     {
-        if(m_Data != null)
+        CreateBuffers();
+    }
+
+    private void Start()
+    {
+        if (m_Data != null)
         {
             Data = m_Data;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseBuffers();
+    }
+
+    private void Validated()
+    {
+        m_MeshGenerator.SettingsUpdated.Value = true;
+    }
+
+    private void CreateBuffers()
+    {
+        ReleaseBuffers();
+
+        m_NoiseParameterBuffer = new ComputeBuffer(2, IslandGenerationData.NoiseParameters.SizeOf);
+    }
+
+    private void ReleaseBuffers()
+    {
+        if (m_NoiseParameterBuffer != null)
+        {
+            m_NoiseParameterBuffer.Release();
         }
     }
 
@@ -31,13 +83,8 @@ public class IslandDensity : DensityGenerator
 
             m_DensityShader.SetFloat("noiseInfluenceCurve", Data.NoiseInfluenceCurve);
 
-            m_DensityShader.SetInt("octaves", Data.Octaves);
-            m_DensityShader.SetFloat("startingFrequency", Data.StartingFrequency);
-            m_DensityShader.SetFloat("frequencyStep", Data.FrequencyStep);
-            m_DensityShader.SetFloat("startingAmplitude", Data.StartingAmplitude);
-            m_DensityShader.SetFloat("amplitudeStep", Data.AmplitudeStep);
-            m_DensityShader.SetVector("noiseOffset", Data.NoiseOffset);
-            m_DensityShader.SetVector("noiseScalar", Data.NoiseScalar);
+            m_NoiseParameterBuffer.SetData(new IslandGenerationData.NoiseParameters[] { Data.VerticalNoiseParameters, Data.BaseNoiseParameters });
+            m_DensityShader.SetBuffer(0, "noiseParameters", m_NoiseParameterBuffer);
         }
         else
         {

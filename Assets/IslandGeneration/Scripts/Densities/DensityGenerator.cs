@@ -6,7 +6,7 @@ public abstract class DensityGenerator : MonoBehaviour
     [SerializeField]
     protected ComputeShader m_DensityShader;
     [SerializeField]
-    private MeshGenerator m_MeshGenerator;
+    protected MeshGenerator m_MeshGenerator;
 
     protected List<ComputeBuffer> buffersToRelease;
 

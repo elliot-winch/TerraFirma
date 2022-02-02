@@ -1,10 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "IslandGenerationData", menuName = "Custom/IslandGenerationData")]
 public class IslandGenerationData : ScriptableObject
 {
+    [Serializable]
+    public struct NoiseParameters
+    {
+        public int Octaves;
+        public float StartingFrequency;
+        public float FrequencyStep;
+        public float StartingAmplitude;
+        public float AmplitudeStep;
+        public Vector4 NoiseOffset;
+        public Vector4 NoiseScalar;
+
+        public static int SizeOf => sizeof(int) + sizeof(float) * 4 + sizeof(float) * 4 * 2;
+    }
+
     [Header("Cone")]
     [SerializeField]
     private float m_Curvature = 1f;
@@ -22,30 +35,20 @@ public class IslandGenerationData : ScriptableObject
 
     [Header("Noise")]
     [SerializeField]
-    private int m_Octaves;
-    public int Octaves => m_Octaves;
+    private NoiseParameters m_VerticalNoiseParameters;
+    public NoiseParameters VerticalNoiseParameters => m_VerticalNoiseParameters;
 
     [SerializeField]
-    private float m_StartingFrequency;
-    public float StartingFrequency => m_StartingFrequency;
+    private NoiseParameters m_BaseNoiseParameters;
+    public NoiseParameters BaseNoiseParameters => m_BaseNoiseParameters;
 
-    [SerializeField]
-    private float m_FrequencyStep;
-    public float FrequencyStep => m_FrequencyStep;
+    public Action OnParametersChanged { get; set; }
 
-    [SerializeField]
-    private float m_StartingAmplitude;
-    public float StartingAmplitude => m_StartingAmplitude;
-
-    [SerializeField]
-    private float m_AmplitudeStep;
-    public float AmplitudeStep => m_AmplitudeStep;
-
-    [SerializeField]
-    private Vector4 m_NoiseOffset;
-    public Vector4 NoiseOffset => m_NoiseOffset;
-
-    [SerializeField]
-    private Vector4 m_NoiseScalar;
-    public Vector4 NoiseScalar => m_NoiseScalar;
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+        {
+            OnParametersChanged?.Invoke();
+        }
+    }
 }
