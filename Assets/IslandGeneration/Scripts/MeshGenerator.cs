@@ -1,7 +1,5 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 public class MeshGenerator : MonoBehaviour
@@ -75,6 +73,8 @@ public class MeshGenerator : MonoBehaviour
     [SerializeField]
     private Color m_BoundsGizmoCol = Color.white;
 
+    public Action OnValidated { get; set; }
+
     //Chunks
     private List<Chunk> m_Chunks;
     public List<Chunk> Chunks => m_Chunks;
@@ -83,8 +83,6 @@ public class MeshGenerator : MonoBehaviour
     private ComputeBuffer triangleBuffer;
     private ComputeBuffer pointsBuffer;
     private ComputeBuffer triCountBuffer;
-
-    public SubscriptionValue<bool> SettingsUpdated { get; } = new SubscriptionValue<bool>(false);
 
     public Vector3 PointSpacing 
     {
@@ -122,15 +120,7 @@ public class MeshGenerator : MonoBehaviour
 
     private void Start()
     {
-        SettingsUpdated.Subscribe(OnSettingsUpdated);
-    }
-
-    private void OnValidate()
-    {
-        if (Application.isPlaying)
-        {
-            SettingsUpdated.Value = true;
-        }
+        UpdateChunks();
     }
 
     void OnDestroy()
@@ -150,16 +140,13 @@ public class MeshGenerator : MonoBehaviour
             }
         }
     }
-    #endregion
 
-    private void OnSettingsUpdated(bool updated)
+    //Debug
+    private void OnValidate()
     {
-        if (updated)
-        {
-            SettingsUpdated.Value = false;
-            UpdateChunks();
-        }
+        OnValidated?.Invoke();
     }
+    #endregion
 
     #region Public Functions
     public void UpdateChunks()

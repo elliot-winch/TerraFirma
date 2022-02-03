@@ -12,23 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb1e3a0b86bdb445bf70135aa52e91a, type: 3}
   m_Name: IslandTop
   m_EditorClassIdentifier: 
-  m_Curvature: 1
-  m_ConeRadius: 0.25
-  m_ConeHeight: 0.5
-  m_NoiseInfluenceCurve: 1
-  m_VerticalNoiseParameters:
-    Octaves: 2
-    StartingFrequency: 1
-    FrequencyStep: 2
-    StartingAmplitude: 1
-    AmplitudeStep: 0.5
+  Curvature: 1
+  ConeRadius: 0.45
+  ConeHeight: 1
+  NoiseInfluenceCurve: 1
+  VerticalNoiseParameters:
+    Octaves: 0
+    StartingFrequency: 0
+    FrequencyStep: 0
+    StartingAmplitude: 0
+    AmplitudeStep: 0
     NoiseOffset: {x: 0, y: 0, z: 0, w: 0}
-    NoiseScalar: {x: 0.2, y: 0, z: 0.2, w: 0}
-  m_BaseNoiseParameters:
+    NoiseScalar: {x: 0, y: 0, z: 0, w: 0}
+  BaseNoiseParameters:
     Octaves: 1
     StartingFrequency: 1
     FrequencyStep: 0
-    StartingAmplitude: 1
+    StartingAmplitude: 0.2
     AmplitudeStep: 0
     NoiseOffset: {x: 0, y: 0, z: 0, w: 0}
-    NoiseScalar: {x: 0.2, y: 0, z: 0.2, w: 0}
+    NoiseScalar: {x: 0, y: 0, z: 0, w: 0}

@@ -20,7 +20,8 @@ float addNoise(float3 pos, NoiseParameters parameters)
     for (int j = 0; j < parameters.octaves; j++) 
     {
         float3 noisePos = (pos + parameters.noiseOffset) * parameters.noiseScalar;
-        noise += snoise(noisePos * frequency) * amplitude;
+        float normalisedNoises = (snoise(noisePos * frequency) + 1) / 2; //snoise gives values (-1, 1), but we want (0, 1)
+        noise += normalisedNoises * amplitude;
         amplitude *= parameters.amplitudeStep;
         frequency *= parameters.frequencyStep;
     }

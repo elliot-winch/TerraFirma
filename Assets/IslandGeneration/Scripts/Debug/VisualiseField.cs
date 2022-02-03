@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEngine;
 
 public class VisualiseField : MonoBehaviour
@@ -9,6 +11,8 @@ public class VisualiseField : MonoBehaviour
         Z
     };
 
+    [SerializeField]
+    private Vector3Int m_ChunkCoord;
     [SerializeField]
     private MeshGenerator m_MeshGenerator;
     [SerializeField]
@@ -31,6 +35,8 @@ public class VisualiseField : MonoBehaviour
     private ComputeBuffer m_PointsBuffer;
 
     private Texture2D m_Texture;
+
+    public Action OnValidated { get; set; }
 
     private int NumPointsDimensionCurrent
     {
@@ -85,30 +91,14 @@ public class VisualiseField : MonoBehaviour
         CreateBuffers();
     }
 
-    private void Start()
-    {
-        m_MeshGenerator.SettingsUpdated.Subscribe(OnSettingsUpdated);
-    }
-
-    private void OnValidate()
-    {
-        if (Application.isPlaying)
-        {
-            Visualise();
-        }
-    }
-
     private void OnDestroy()
     {
         ReleaseBuffers();
     }
 
-    private void OnSettingsUpdated(bool updated)
+    private void OnValidate()
     {
-        if (updated)
-        {
-            Visualise();
-        }
+        OnValidated?.Invoke();
     }
 
     public void Visualise()
@@ -120,7 +110,9 @@ public class VisualiseField : MonoBehaviour
             return;
         }
 
-        foreach (Chunk chunk in m_MeshGenerator.Chunks)
+        Chunk chunk = m_MeshGenerator.Chunks.FirstOrDefault(c => c.coord == m_ChunkCoord);
+
+        if (chunk)
         {
             Visualise(chunk);
         }

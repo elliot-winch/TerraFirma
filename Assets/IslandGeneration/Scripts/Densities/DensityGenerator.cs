@@ -1,21 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class DensityGenerator : MonoBehaviour 
 {
     [SerializeField]
     protected ComputeShader m_DensityShader;
-    [SerializeField]
-    protected MeshGenerator m_MeshGenerator;
 
     protected List<ComputeBuffer> buffersToRelease;
 
+    public Action OnValidated { get; set; }
+
     private void OnValidate()
     {
-        if (Application.isPlaying)
-        {
-            m_MeshGenerator.SettingsUpdated.Value = true;
-        }
+        OnValidated?.Invoke();
     }
 
     public virtual ComputeBuffer Generate 

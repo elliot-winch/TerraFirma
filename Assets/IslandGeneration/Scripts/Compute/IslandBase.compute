@@ -39,8 +39,8 @@ void IslandBase (uint3 id : SV_DispatchThreadID)
     float3 pos = posFromCoord(id.x,id.y,id.z);
     float value = cone(pos);
 
-    value += addNoise(pos, noiseParameters[1]) * pow(relativeYLevel(pos.y), noiseInfluenceCurve);
+    value -= addNoise(pos, noiseParameters[1]) * pow(relativeYLevel(pos.y), noiseInfluenceCurve);
 
     int index = indexFromCoord(id.x,id.y,id.z);
-    points[index] = float4(pos, value); //
+    points[index] = float4(pos, value); 
 }
