@@ -34,7 +34,17 @@ int edgeIndexFromCoord(int x, int y, int z, int direction)
 {
     int index = indexFromCoord(x,y,z);
 
-    return index + direction * numEdges / 3;
+    if(direction > 0)
+    {
+        index += (numPoints.x - 1) * numPoints.y * numPoints.z;
+    }
+
+    if(direction > 1)
+    {
+        index += (numPoints.y - 1) * numPoints.z * numPoints.x;
+    }
+
+    return index;
 }
 
 [numthreads(numThreads,numThreads,numThreads)]
