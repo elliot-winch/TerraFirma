@@ -9,8 +9,10 @@ struct Triangle {
     float3 vertexA;
 };
 
-AppendStructuredBuffer<Triangle> triangles;
 RWStructuredBuffer<float4> points;
+
+//AppendStructuredBuffer<float4> vertices;
+AppendStructuredBuffer<Triangle> triangles;
 
 int3 numPoints;
 float isoLevel;
