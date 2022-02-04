@@ -4,26 +4,37 @@
 static const int numThreads = 8;
 
 struct Triangle {
-    float3 vertexC;
-    float3 vertexB;
-    float3 vertexA;
+    int vertexC;
+    int vertexB;
+    int vertexA;
 };
 
-RWStructuredBuffer<float4> points;
-
-//AppendStructuredBuffer<float4> vertices;
-AppendStructuredBuffer<Triangle> triangles;
-
+//Input
 int3 numPoints;
 float isoLevel;
+uint numEdges; //should be a multiple of 3
+RWStructuredBuffer<float4> points;
 
-float3 interpolateVerts(float4 v1, float4 v2) {
+//Output
+RWStructuredBuffer<float4> vertices;
+AppendStructuredBuffer<Triangle> triangles;
+
+
+float4 interpolateVerts(float4 v1, float4 v2) {
     float t = (isoLevel - v1.w) / (v2.w - v1.w);
-    return v1.xyz + t * (v2.xyz-v1.xyz);
+    return v1 + t * (v2-v1);
 }
 
 int indexFromCoord(int x, int y, int z) {
     return z * numPoints.y * numPoints.x + y * numPoints.x + x;
+}
+
+//x is 0, y is 1, z is 2
+int edgeIndexFromCoord(int x, int y, int z, int direction)
+{
+    int index = indexFromCoord(x,y,z);
+
+    return index + direction * numEdges / 3;
 }
 
 [numthreads(numThreads,numThreads,numThreads)]
@@ -33,6 +44,23 @@ void March (int3 id : SV_DispatchThreadID)
     if (id.x >= numPoints.x-1 || id.y >= numPoints.y-1 || id.z >= numPoints.z-1) {
         return;
     }
+
+    int vertexIndices[12] = {
+        edgeIndexFromCoord(id.x    , id.y    , id.z    , 0),
+        edgeIndexFromCoord(id.x + 1, id.y    , id.z    , 2),
+        edgeIndexFromCoord(id.x    , id.y    , id.z + 1, 0),
+        edgeIndexFromCoord(id.x    , id.y    , id.z    , 2),
+
+        edgeIndexFromCoord(id.x    , id.y + 1, id.z    , 0),
+        edgeIndexFromCoord(id.x + 1, id.y + 1, id.z    , 2),
+        edgeIndexFromCoord(id.x    , id.y + 1, id.z + 1, 0),
+        edgeIndexFromCoord(id.x    , id.y + 1, id.z    , 2),
+
+        edgeIndexFromCoord(id.x    , id.y    , id.z    , 1),
+        edgeIndexFromCoord(id.x + 1, id.y    , id.z    , 1),
+        edgeIndexFromCoord(id.x + 1, id.y    , id.z + 1, 1),
+        edgeIndexFromCoord(id.x    , id.y    , id.z + 1, 1)
+    };
 
     // 8 corners of the current cube
     float4 cornerValues[8] = {
@@ -62,21 +90,34 @@ void March (int3 id : SV_DispatchThreadID)
 
     // Create triangles for current cube configuration
     for (int i = 0; triangulation[cubeIndex][i] != -1; i +=3) {
+
+        int localEdgeIndex0 = triangulation[cubeIndex][i];
+        int localEdgeIndex1 = triangulation[cubeIndex][i + 1];
+        int localEdgeIndex2 = triangulation[cubeIndex][i + 2];
+
+        int globalVertexIndex0 = vertexIndices[localEdgeIndex0];
+        int globalVertexIndex1 = vertexIndices[localEdgeIndex1];
+        int globalVertexIndex2 = vertexIndices[localEdgeIndex2];
+
         // Get indices of corner points A and B for each of the three edges
         // of the cube that need to be joined to form the triangle.
-        int a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
-        int b0 = cornerIndexBFromEdge[triangulation[cubeIndex][i]];
+        int a0 = cornerIndexAFromEdge[localEdgeIndex0];
+        int b0 = cornerIndexBFromEdge[localEdgeIndex0];
 
-        int a1 = cornerIndexAFromEdge[triangulation[cubeIndex][i+1]];
-        int b1 = cornerIndexBFromEdge[triangulation[cubeIndex][i+1]];
+        int a1 = cornerIndexAFromEdge[localEdgeIndex1];
+        int b1 = cornerIndexBFromEdge[localEdgeIndex1];
 
-        int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i+2]];
-        int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i+2]];
+        int a2 = cornerIndexAFromEdge[localEdgeIndex2];
+        int b2 = cornerIndexBFromEdge[localEdgeIndex2];
+
+        vertices[globalVertexIndex0] = interpolateVerts(cornerValues[a0], cornerValues[b0]);
+        vertices[globalVertexIndex1] = interpolateVerts(cornerValues[a1], cornerValues[b1]);
+        vertices[globalVertexIndex2] = interpolateVerts(cornerValues[a2], cornerValues[b2]);
 
         Triangle tri;
-        tri.vertexA = interpolateVerts(cornerValues[a0], cornerValues[b0]);
-        tri.vertexB = interpolateVerts(cornerValues[a1], cornerValues[b1]);
-        tri.vertexC = interpolateVerts(cornerValues[a2], cornerValues[b2]);
+        tri.vertexA = globalVertexIndex0;
+        tri.vertexB = globalVertexIndex1;
+        tri.vertexC = globalVertexIndex2;
         triangles.Append(tri);
     }
 }
