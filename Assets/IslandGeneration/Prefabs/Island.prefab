@@ -86,7 +86,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 427f0ecdb4dbb4841b9894d57bdd4c79, type: 2}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: Curvature
-      value: 0.75
+      value: 1.61
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: ConeHeight
@@ -94,7 +94,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: ConeRadius
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: m_BaseNoiseScale
@@ -110,7 +110,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.Octaves
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: BaseNoiseParameters.AmplitudeStep
@@ -119,6 +119,14 @@ PrefabInstance:
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: BaseNoiseParameters.FrequencyStep
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
+      propertyPath: BaseNoiseParameters.NoiseScalar.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
+      propertyPath: BaseNoiseParameters.NoiseScalar.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: BaseNoiseParameters.StartingAmplitude
@@ -134,11 +142,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.FrequencyStep
-      value: 0.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.NoiseOffset.x
-      value: 2.95
+      value: 5.7
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.NoiseOffset.z
@@ -154,11 +162,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.StartingAmplitude
-      value: 1
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453772961561, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: VerticalNoiseParameters.StartingFrequency
-      value: 3.21
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4123367453941157184, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: m_Mesh
@@ -191,7 +199,7 @@ PrefabInstance:
     - target: {fileID: 4123367454027161881, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: m_Material
       value: 
-      objectReference: {fileID: 2100000, guid: e2b21eb5437bfb1439fae543db0a84ae, type: 2}
+      objectReference: {fileID: 2100000, guid: 9bb3b1c3c27d56e4aa547f0e4bb558cc, type: 2}
     - target: {fileID: 4123367454027161881, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: m_Offset.y
       value: -1

@@ -28,3 +28,4 @@ float addNoise(float3 pos, NoiseParameters parameters)
 
     return noise;
 }
+

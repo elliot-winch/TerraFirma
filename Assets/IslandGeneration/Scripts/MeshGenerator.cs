@@ -226,7 +226,6 @@ public class MeshGenerator : MonoBehaviour
         m_MarchingCubesShader.SetBuffer(0, "points", m_PointsBuffer);
         m_MarchingCubesShader.SetInts("numPoints", m_NumPoints.x, m_NumPoints.y, m_NumPoints.z);
         m_MarchingCubesShader.SetFloat("isoLevel", m_FieldThreshold);
-        m_MarchingCubesShader.SetInt("numEdges", NumEdges);
 
         m_MarchingCubesShader.SetBuffer(0, "vertices", m_VertexBuffer);
         m_MarchingCubesShader.SetBuffer(0, "triangles", m_TriangleBuffer);
@@ -238,6 +237,7 @@ public class MeshGenerator : MonoBehaviour
 
         //Use mesh data from GPU to build mesh on CPU
         CreateMesh(chunk);
+
     }
 
     private void CreateMesh(Chunk chunk)

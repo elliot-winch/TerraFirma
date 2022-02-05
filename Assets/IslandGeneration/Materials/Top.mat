@@ -23,7 +23,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Terrain
+  m_Name: Top
   m_Shader: {fileID: -6465566751694194690, guid: f7502d34bfc2d95489d718b4bff49f7c, type: 3}
   m_ShaderKeywords: _DISABLE_SSR_TRANSPARENT
   m_LightmapFlags: 4
@@ -110,7 +110,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Biome:
-        m_Texture: {fileID: 2800000, guid: b85a9b726b76ea64ab9eb0ff888ccace, type: 3}
+        m_Texture: {fileID: 2800000, guid: e5e9c2c7e0a91144792197357e4f97fe, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -163,6 +163,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _ExtraTex:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Flat:
+        m_Texture: {fileID: 2800000, guid: 11ce42eb65a3e384caba2e4b040559a8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HeightMap:
@@ -281,6 +285,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Steep:
+        m_Texture: {fileID: 2800000, guid: 833a73c9bba7c0742b049868ef783031, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SubsurfaceMaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -383,8 +391,11 @@ Material:
     - _AlphaToMaskInspectorValue: 0
     - _Anisotropy: 0
     - _BlendMode: 0
+    - _BumpMapNoiseScale: 15
+    - _BumpMapStrength: 0
     - _BumpScale: 1
     - _CoatMask: 0
+    - _ConeHeight: 1
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 2
     - _CullModeForward: 2

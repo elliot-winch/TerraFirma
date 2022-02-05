@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 2914.954, g: 1748.6592, b: 1077.4453, a: 1}
+  m_IndirectSpecularColor: {r: 2914.954, g: 1748.6553, b: 1077.418, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1063,14 +1063,6 @@ PrefabInstance:
       propertyPath: m_NumChunks.z
       value: 5
       objectReference: {fileID: 0}
-    - target: {fileID: 2217961132305137598, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
-      propertyPath: m_NumPoints.x
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 2217961132305137598, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
-      propertyPath: m_NumPoints.z
-      value: 24
-      objectReference: {fileID: 0}
     - target: {fileID: 2217961132555159998, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
       propertyPath: ConeHeight
       value: 0.7
@@ -1166,14 +1158,6 @@ PrefabInstance:
     - target: {fileID: 2881990659744224425, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
       propertyPath: m_NumChunks.z
       value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2881990659744224425, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
-      propertyPath: m_NumPoints.x
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 2881990659744224425, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
-      propertyPath: m_NumPoints.z
-      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 2881990660437181664, guid: 6555c522ae338974aa3a2976ef68dd17, type: 3}
       propertyPath: m_Materials.Array.data[0]

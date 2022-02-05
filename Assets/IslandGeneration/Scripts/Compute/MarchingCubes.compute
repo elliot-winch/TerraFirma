@@ -12,7 +12,6 @@ struct Triangle {
 //Input
 int3 numPoints;
 float isoLevel;
-uint numEdges; //should be a multiple of 3
 RWStructuredBuffer<float4> points;
 
 //Output
