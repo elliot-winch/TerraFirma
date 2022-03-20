@@ -402,6 +402,10 @@ PrefabInstance:
       propertyPath: m_FieldThreshold
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4123367454027161881, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
+      propertyPath: m_MarchingCubesShader
+      value: 
+      objectReference: {fileID: 7200000, guid: fc2f5642f1844484f9bfed9afca4b696, type: 3}
     - target: {fileID: 4123367454053542794, guid: f423d94b14c224a4fa53df385f3e34a5, type: 3}
       propertyPath: m_Mesh
       value: 

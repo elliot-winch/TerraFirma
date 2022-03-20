@@ -150,7 +150,7 @@ MonoBehaviour:
   m_ChunkSize: {x: 1, y: 1, z: 1}
   m_NumPoints: {x: 16, y: 32, z: 16}
   m_Offset: {x: 0, y: 0, z: 0}
-  m_MarchingCubesShader: {fileID: 7200000, guid: da61193ea52571e4688a2fcdbbde9fad, type: 3}
+  m_MarchingCubesShader: {fileID: 7200000, guid: fc2f5642f1844484f9bfed9afca4b696, type: 3}
   m_Material: {fileID: 2100000, guid: 0f2a104aeb9f2c440a0c38e8efe58d4f, type: 2}
   m_GenerateColliders: 0
   m_ShowBoundsGizmo: 1
