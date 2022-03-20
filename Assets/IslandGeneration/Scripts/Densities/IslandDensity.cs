@@ -2,16 +2,39 @@ using UnityEngine;
 
 public class IslandDensity : DensityGenerator
 {
-    [SerializeField]
-    private IslandGenerationData m_Data;
+    public float Curvature;
+    public float ConeRadius;
+    public float ConeHeight;
+    public float NoiseInfluenceCurve;
 
-    public IslandGenerationData Data { get; set; }
+    public NoiseParameters VerticalNoiseParameters;
+    [HideInInspector] //Set by Island
+    public NoiseParameters BaseNoiseParameters;
+
+    private ComputeBuffer m_NoiseParameterBuffer;
 
     private void Awake()
     {
-        if(m_Data != null)
+        CreateBuffers();
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseBuffers();
+    }
+
+    private void CreateBuffers()
+    {
+        ReleaseBuffers();
+
+        m_NoiseParameterBuffer = new ComputeBuffer(2, NoiseParameters.SizeOf);
+    }
+
+    private void ReleaseBuffers()
+    {
+        if (m_NoiseParameterBuffer != null)
         {
-            Data = m_Data;
+            m_NoiseParameterBuffer.Release();
         }
     }
 
@@ -23,26 +46,15 @@ public class IslandDensity : DensityGenerator
         Vector3 offset,
         Vector3 spacing)
     {
-        if (Data != null)
-        {
-            m_DensityShader.SetFloat("curvature", Data.Curvature);
-            m_DensityShader.SetFloat("coneRadius", Data.ConeRadius);
-            m_DensityShader.SetFloat("coneHeight", Data.ConeHeight);
 
-            m_DensityShader.SetFloat("noiseInfluenceCurve", Data.NoiseInfluenceCurve);
+        m_DensityShader.SetFloat("curvature", Curvature);
+        m_DensityShader.SetFloat("coneRadius", ConeRadius);
+        m_DensityShader.SetFloat("coneHeight", ConeHeight);
 
-            m_DensityShader.SetInt("octaves", Data.Octaves);
-            m_DensityShader.SetFloat("startingFrequency", Data.StartingFrequency);
-            m_DensityShader.SetFloat("frequencyStep", Data.FrequencyStep);
-            m_DensityShader.SetFloat("startingAmplitude", Data.StartingAmplitude);
-            m_DensityShader.SetFloat("amplitudeStep", Data.AmplitudeStep);
-            m_DensityShader.SetVector("noiseOffset", Data.NoiseOffset);
-            m_DensityShader.SetVector("noiseScalar", Data.NoiseScalar);
-        }
-        else
-        {
-            throw new System.Exception("Attempting to generate island without data!");
-        }
+        m_DensityShader.SetFloat("noiseInfluenceCurve", NoiseInfluenceCurve);
+
+        m_NoiseParameterBuffer.SetData(new NoiseParameters[] { BaseNoiseParameters, VerticalNoiseParameters });
+        m_DensityShader.SetBuffer(0, "noiseParameters", m_NoiseParameterBuffer);
 
         return base.Generate(pointsBuffer, numPoints, boundsSize, centre, offset, spacing);
     }

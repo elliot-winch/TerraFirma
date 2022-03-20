@@ -1,26 +1,31 @@
 #include "Noise.compute"
 
-int octaves;
-float startingFrequency;
-float frequencyStep;
-float startingAmplitude;
-float amplitudeStep;
-float3 noiseOffset;
-float3 noiseScalar;
+struct NoiseParameters 
+{
+    int octaves;
+    float startingFrequency;
+    float frequencyStep;
+    float startingAmplitude;
+    float amplitudeStep;
+    float4 noiseOffset;
+    float4 noiseScalar;
+};
 
-float addNoise(float3 pos)
+float addNoise(float3 pos, NoiseParameters parameters)
 {
     float noise = 0;
-    float frequency = startingFrequency;
-    float amplitude = startingAmplitude;
+    float frequency = parameters.startingFrequency;
+    float amplitude = parameters.startingAmplitude;
 
-    for (int j = 0; j < octaves; j++) 
+    for (int j = 0; j < parameters.octaves; j++) 
     {
-        float3 noisePos = (pos + noiseOffset) * noiseScalar;
-        noise += snoise(noisePos * frequency) * amplitude;
-        amplitude *= amplitudeStep;
-        frequency *= frequencyStep;
+        float3 noisePos = (pos + parameters.noiseOffset) * parameters.noiseScalar;
+        float normalisedNoises = (snoise(noisePos * frequency) + 1) / 2; //snoise gives values (-1, 1), but we want (0, 1)
+        noise += normalisedNoises * amplitude;
+        amplitude *= parameters.amplitudeStep;
+        frequency *= parameters.frequencyStep;
     }
 
     return noise;
 }
+
